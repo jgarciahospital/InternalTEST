@@ -60,11 +60,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
                padding: 6px 10px; font-size: .58rem; color: #166534; line-height: 1.45; margin-top: 8px; }
 
 /* ── INTERNAL CLIENT CALLS (App ↕ Android) ── */
-.cl-int { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0 6px; }
-.cl-int-bar { height: 8px; width: 2px; background: #c4b5fd; align-self: center; }
+.cl-int { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0 4px; }
+.cl-int-bar { height: 6px; width: 2px; background: var(--ga); align-self: center; opacity: .5; }
 .cl-int-call { display: flex; align-items: center; gap: 4px; }
-.cl-int-call .tip { font-size: .65rem; color: #7c3aed; flex-shrink: 0; }
-.cl-int-call .lbl { font-size: .47rem; font-weight: 700; color: #6d28d9; line-height: 1.25; flex: 1; }
+.cl-int-call .tip { font-size: .65rem; color: var(--ga); flex-shrink: 0; }
+.cl-int-call .n  { background: var(--ga); color: white; border-radius: 50%; width: 16px; height: 16px;
+                   font-size: .5rem; font-weight: 900; display: flex; align-items: center; justify-content: center;
+                   flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+.cl-int-call .lbl { font-size: .46rem; font-weight: 700; color: var(--ga); line-height: 1.25; flex: 1; }
 .cl-int-call.up  { flex-direction: row-reverse; }
 .cl-int-call.up .lbl { text-align: right; }
 .b-os-eap { font-size: .49rem; font-style: italic; opacity: .75; margin-top: 2px; display: block;
@@ -218,11 +221,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div class="cl-int">
         <div class="cl-int-bar"></div>
         <div class="cl-int-call">
+          <div class="n">3</div>
           <span class="tip">▼</span>
           <span class="lbl">creds OID4VP<br/>pide OT</span>
         </div>
         <div class="cl-int-bar"></div>
         <div class="cl-int-call up">
+          <div class="n">4</div>
           <span class="tip">▲</span>
           <span class="lbl">OT cifrado</span>
         </div>
@@ -247,27 +252,27 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
       <div class="az-sp"></div>
 
-      <!-- GROUP B: steps 3,6 — OT exchange -->
+      <!-- GROUP B: steps 5,8 — OT exchange -->
       <div class="aw">
-        <div class="ar r" style="--c:var(--gb)"><div class="ln"></div><div class="n">3</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="ar r" style="--c:var(--gb)"><div class="ln"></div><div class="n">5</div><div class="ln"></div><div class="tip">▶</div></div>
         <div class="lbl" style="color:var(--gb)">envía OT Android</div>
       </div>
       <div class="az-gap"></div>
       <div class="aw">
-        <div class="ar l" style="--c:var(--gb)"><div class="tip">◀</div><div class="ln"></div><div class="n">6</div><div class="ln"></div></div>
+        <div class="ar l" style="--c:var(--gb)"><div class="tip">◀</div><div class="ln"></div><div class="n">8</div><div class="ln"></div></div>
         <div class="lbl" style="color:var(--gb)">access token</div>
       </div>
 
       <div class="az-sp"></div>
 
-      <!-- GROUP C: steps 7,10 — NV API -->
+      <!-- GROUP C: steps 9,12 — NV API -->
       <div class="aw">
-        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">7</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">9</div><div class="ln"></div><div class="tip">▶</div></div>
         <div class="lbl" style="color:var(--gc)">llama endpoint</div>
       </div>
       <div class="az-gap"></div>
       <div class="aw">
-        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">10</div><div class="ln"></div></div>
+        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">12</div><div class="ln"></div></div>
         <div class="lbl" style="color:var(--gc)">MSISDN ✓</div>
       </div>
     </div>
@@ -284,18 +289,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
 
       <!-- Shared-credential link -->
-      <div class="cred-link">misma clave privada SETA usada en pasos 1–2 y en el descifrado del paso 3</div>
+      <div class="cred-link">misma clave privada SETA usada en pasos 1–2 y en el descifrado del paso 5</div>
 
       <!-- Módulo B: SETA (descifrado) + Sandbox (JWT/AT) (morado) -->
       <div class="sfn sfn-b" id="s-fn2" onclick="simDetail('fn2',this)">
-        <span class="tag">🔷 SETA + Sandbox · pasos 3–6</span>
+        <span class="tag">🔷 SETA + Sandbox · pasos 5–8</span>
         Descifra OT (SETA) → JWT Bearer → Access Token
         <div class="int">descifra OT con misma clave privada SETA</div>
       </div>
 
       <!-- Módulo C: Sandbox — NV API (verde) -->
       <div class="sfn sfn-c" id="s-fn3" onclick="simDetail('fn3',this)">
-        <span class="tag">Sandbox · pasos 7–10</span>
+        <span class="tag">Sandbox · pasos 9–12</span>
         Endpoint NV API · SDK opcional
       </div>
 
@@ -306,27 +311,27 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="az">
       <div class="az-sp"></div><!-- skip group A area -->
 
-      <!-- GROUP B: steps 4,5 — Auth Server -->
+      <!-- GROUP B: steps 6,7 — Auth Server -->
       <div class="aw">
-        <div class="ar r" style="--c:var(--gb)"><div class="ln"></div><div class="n">4</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="ar r" style="--c:var(--gb)"><div class="ln"></div><div class="n">6</div><div class="ln"></div><div class="tip">▶</div></div>
         <div class="lbl" style="color:var(--gb)">JWT Bearer</div>
       </div>
       <div class="az-gap"></div>
       <div class="aw">
-        <div class="ar l" style="--c:var(--gb)"><div class="tip">◀</div><div class="ln"></div><div class="n">5</div><div class="ln"></div></div>
+        <div class="ar l" style="--c:var(--gb)"><div class="tip">◀</div><div class="ln"></div><div class="n">7</div><div class="ln"></div></div>
         <div class="lbl" style="color:var(--gb)">access token</div>
       </div>
 
       <div class="az-sp"></div>
 
-      <!-- GROUP C: steps 8,9 — NV API -->
+      <!-- GROUP C: steps 10,11 — NV API -->
       <div class="aw">
-        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">8</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">10</div><div class="ln"></div><div class="tip">▶</div></div>
         <div class="lbl" style="color:var(--gc)">llama NV API</div>
       </div>
       <div class="az-gap"></div>
       <div class="aw">
-        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">9</div><div class="ln"></div></div>
+        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">11</div><div class="ln"></div></div>
         <div class="lbl" style="color:var(--gc)">MSISDN</div>
       </div>
     </div>
@@ -479,33 +484,35 @@ function dismissSplash() {
 // ── DETAIL CONTENT ────────────────────────────────────────
 const SIM_DETAILS = {
   fn1: {
-    title: '🔷 SETA — Genera credenciales OpenID4VP',
+    title: '🔷 SETA — Genera credenciales OpenID4VP + Android emite OT',
     color: 'var(--ga)',
     steps: [
-      { n:'1',  c:'var(--ga)', w:'App → SETA',    t:'App pide a SETA las credenciales OpenID4VP para esta sesión' },
-      { n:'↻',  c:'var(--gi)', w:'SETA (interno)', t:'SETA genera las credenciales firmándolas con su <strong>certificado privado</strong> (credencial de sandbox Android)' },
-      { n:'2',  c:'var(--ga)', w:'SETA → App',    t:'SETA devuelve las credenciales firmadas. Android verificará el fingerprint antes de generar el OT' },
+      { n:'1',  c:'var(--ga)', w:'App → SETA',        t:'App pide a SETA las credenciales OpenID4VP para esta sesión' },
+      { n:'↻',  c:'var(--gi)', w:'SETA (interno)',     t:'SETA genera las credenciales firmándolas con su <strong>certificado privado</strong> (credencial de sandbox Android)' },
+      { n:'2',  c:'var(--ga)', w:'SETA → App',         t:'SETA devuelve las credenciales firmadas. Android verificará el fingerprint del certificado antes de generar el OT' },
+      { n:'3',  c:'var(--ga)', w:'App → Android OS',   t:'App pasa las credenciales OpenID4VP a Android CredentialManager y solicita un Operator Token' },
+      { n:'4',  c:'var(--ga)', w:'Android OS → App',   t:'Android autentica la SIM vía EAP-AKA contra el Entitlement Server y devuelve el OT cifrado para SETA. La App no puede leerlo.' },
     ]
   },
   fn2: {
     title: '🔷 SETA · Descifra OT — Sandbox · JWT Bearer → Access Token',
     color: 'var(--gb)',
     steps: [
-      { n:'3',  c:'var(--gb)', w:'App → Sandbox',       t:'App envía el Operator Token generado por Android. Está cifrado para SETA — la App no puede leerlo' },
-      { n:'↻',  c:'var(--gi)', w:'SETA (interno)',       t:'SETA descifra el OT con la <strong>misma clave privada</strong> del paso 1–2 (credencial SETA sandbox Android)' },
-      { n:'4',  c:'var(--gb)', w:'Sandbox → Auth Server',t:'Sandbox extrae el <em>temporaryToken</em> y llama al Auth Server del operador con un JWT Bearer' },
-      { n:'5',  c:'var(--gb)', w:'Auth Server → Sandbox',t:'Auth Server valida el JWT Bearer y emite un access token CAMARA' },
-      { n:'6',  c:'var(--gb)', w:'Sandbox → App',        t:'Sandbox entrega el access token a la App' },
+      { n:'5',  c:'var(--gb)', w:'App → Sandbox',        t:'App envía el Operator Token generado por Android. Está cifrado para SETA — la App no puede leerlo' },
+      { n:'↻',  c:'var(--gi)', w:'SETA (interno)',        t:'SETA descifra el OT con la <strong>misma clave privada</strong> de los pasos 1–2 (credencial SETA sandbox Android)' },
+      { n:'6',  c:'var(--gb)', w:'Sandbox → Auth Server', t:'Sandbox extrae el <em>temporaryToken</em> y llama al Auth Server del operador con un JWT Bearer' },
+      { n:'7',  c:'var(--gb)', w:'Auth Server → Sandbox', t:'Auth Server valida el JWT Bearer y emite un access token CAMARA' },
+      { n:'8',  c:'var(--gb)', w:'Sandbox → App',         t:'Sandbox entrega el access token a la App' },
     ]
   },
   fn3: {
     title: 'Sandbox — Endpoint NV API / SDK',
     color: 'var(--gc)',
     steps: [
-      { n:'7',  c:'var(--gc)', w:'App → Sandbox',    t:'App llama al endpoint sandbox con el access token' },
-      { n:'8',  c:'var(--gc)', w:'Sandbox → NV API', t:'Sandbox reenvía la petición a la CAMARA NV API del operador' },
-      { n:'9',  c:'var(--gc)', w:'NV API → Sandbox', t:'NV API resuelve el número de teléfono y devuelve el MSISDN' },
-      { n:'10', c:'var(--gc)', w:'Sandbox → App',    t:'Sandbox devuelve el MSISDN verificado a la App' },
+      { n:'9',  c:'var(--gc)', w:'App → Sandbox',    t:'App llama al endpoint sandbox con el access token' },
+      { n:'10', c:'var(--gc)', w:'Sandbox → NV API', t:'Sandbox reenvía la petición a la CAMARA NV API del operador' },
+      { n:'11', c:'var(--gc)', w:'NV API → Sandbox', t:'NV API resuelve el número de teléfono y devuelve el MSISDN' },
+      { n:'12', c:'var(--gc)', w:'Sandbox → App',    t:'Sandbox devuelve el MSISDN verificado a la App' },
     ]
   }
 };
