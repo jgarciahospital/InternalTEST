@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SETA — CP's API Gateway</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #eef2f7; color: #1c1c1e; }
+
+/* ── COLOR GROUPS ─────────────────────────────────────────── */
+:root {
+  --ga: #2563eb;   /* Grupo A — OpenID4VP       (pasos 1-2)   */
+  --gb: #7c3aed;   /* Grupo B — Auth/Token      (pasos 3-6)   */
+  --gc: #16a34a;   /* Grupo C — NV API endpoints(pasos 7-10)  */
+  --gi: #94a3b8;   /* Interno — procesado SETA               */
+}
+
+.topbar { background: #1c1c1e; color: white; padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; }
+.topbar-title { font-size: .88rem; font-weight: 800; }
+.topbar-sub   { font-size: .65rem; opacity: .5; margin-top: 1px; }
+
+.tabs { display: flex; padding: 12px 24px 0; border-bottom: 2px solid #dde3ed; gap: 4px; }
+.tab  { padding: 7px 16px; font-size: .8rem; font-weight: 700; border: none; border-radius: 8px 8px 0 0;
+        background: #dde3ed; color: #64748b; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+.tab.on { background: white; color: #1e56a8; border-bottom: 2px solid white; }
+
+.page { max-width: 960px; margin: 0 auto; padding: 18px 16px 36px; }
+
+/* ── CARD + ROW ──────────────────────────────────────────── */
+.dcard { background: white; border-radius: 12px; padding: 16px 14px; box-shadow: 0 1px 8px rgba(0,0,0,.08); }
+.drow  { display: flex; align-items: stretch; }
+
+/* ── COLUMNS ─────────────────────────────────────────────── */
+.dc { border: 2px solid; border-radius: 9px; padding: 7px 8px 9px; display: flex; flex-direction: column; gap: 4px; }
+.dc-lbl { font-size: .54rem; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 2px; }
+.dc-client { border-color: #c4b5fd; background: #faf5ff; flex: 0 0 90px; }
+.dc-client .dc-lbl { color: #6d28d9; }
+.dc-csp    { border-color: #5eead4; background: #f0fdfa; flex: 0 0 122px; }
+.dc-csp    .dc-lbl { color: #0f766e; }
+
+/* SETA column: border/bg per group */
+.dc-seta { border: 2px solid #dde3ed; background: #f8fafc; flex: 1; min-width: 0;
+           border-radius: 9px; padding: 7px 8px 9px; display: flex; flex-direction: column; gap: 4px; }
+.dc-seta .dc-lbl { color: #334155; }
+.dc-seta-dim { border: 2px dashed #94a3b8; background: #f8fafc; border-radius: 9px;
+               padding: 7px 8px 9px; display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.dc-seta-dim .dc-lbl { color: #94a3b8; font-size: .54rem; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 2px; }
+
+/* Sandbox opcional (Otras APIs) */
+.dc-sandbox-opt { border: 2px dashed #94a3b8; background: #f8fafc; border-radius: 9px;
+                  padding: 7px 8px 9px; display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.dc-sandbox-opt .dc-lbl { color: #64748b; font-size: .54rem; font-weight: 800; text-transform: uppercase;
+                           letter-spacing: .6px; margin-bottom: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.opt-badge { background: #fbbf24; color: #78350f; border-radius: 4px; padding: 1px 5px;
+             font-size: .45rem; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; flex-shrink: 0; }
+.opt-note { font-size: .52rem; color: #94a3b8; text-align: center; border-top: 1px dashed #cbd5e1;
+            margin-top: 2px; padding-top: 5px; line-height: 1.4; font-style: italic; }
+.bypass-note { background: #f0fdf4; border: 1.5px dashed #86efac; border-radius: 6px;
+               padding: 6px 10px; font-size: .58rem; color: #166534; line-height: 1.45; margin-top: 8px; }
+
+.box { border-radius: 6px; padding: 5px 7px; font-size: .67rem; font-weight: 700; text-align: center; line-height: 1.3; }
+.b-app { background: #7c3aed; color: white; }
+.b-os  { background: #475569; color: white; }
+.b-csp { background: #0f766e; color: white; }
+.b-dim { background: #e2e8f0; color: #64748b; font-size: .67rem; font-weight: 600; border-radius: 6px;
+         padding: 5px 7px; text-align: center; line-height: 1.35; flex: 1;
+         display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.sub { font-size: .57rem; opacity: .75; margin-top: 2px; display: block; }
+
+/* ── SETA FUNCTION BOXES ────────────────────────────────── */
+.sfn { border-radius: 7px; padding: 5px 8px; font-size: .64rem; font-weight: 700;
+       text-align: center; line-height: 1.25; cursor: pointer; transition: .15s;
+       border: 2px solid transparent; display: flex; flex-direction: column; gap: 2px; }
+.sfn .tag { font-size: .48rem; font-weight: 700; opacity: .7; text-transform: uppercase; letter-spacing: .4px; }
+.sfn .int { display: flex; align-items: center; gap: 4px; margin-top: 3px;
+            background: rgba(255,255,255,.18); border-radius: 4px; padding: 2px 6px;
+            font-size: .52rem; font-weight: 600; opacity: .9; border: 1px dashed rgba(255,255,255,.35); }
+.sfn .int::before { content: '↻'; font-size: .65rem; }
+.sfn.active { border-color: #fbbf24 !important; box-shadow: 0 0 0 3px rgba(251,191,36,.25) !important; }
+
+/* group-colored boxes */
+.sfn-a { background: var(--ga); color: white; }
+.sfn-a:hover { filter: brightness(1.1); }
+.sfn-b { background: var(--gb); color: white; }
+.sfn-b:hover { filter: brightness(1.1); }
+.sfn-c { background: var(--gc); color: white; }
+.sfn-c:hover { filter: brightness(1.1); }
+/* clickable in Other APIs */
+.sfn-oa { background: #64748b; color: white; }
+.sfn-oa:hover { filter: brightness(1.1); }
+
+/* Shared-credential link badge between fn1 and fn2 */
+.cred-link { display: flex; align-items: center; gap: 5px; padding: 3px 7px;
+             background: #fefce8; border: 1px solid #fde047; border-radius: 5px;
+             font-size: .52rem; font-weight: 700; color: #92400e; line-height: 1.3; }
+.cred-link::before { content: '🔏'; font-size: .65rem; }
+
+.cert { border: 1.5px solid #fde047; border-radius: 6px; padding: 3px 6px;
+        font-size: .53rem; font-weight: 600; background: #fefce8; color: #713f12; line-height: 1.4; text-align: center; }
+
+/* ── ARROW ZONES ─────────────────────────────────────────── */
+.az { flex: 0 0 80px; display: flex; flex-direction: column; padding: 6px 5px; gap: 0; }
+.az-sp  { flex: 1; }
+.az-gap { height: 6px; flex-shrink: 0; }
+
+.aw { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
+.aw .lbl { font-size: .49rem; font-weight: 700; text-align: center; line-height: 1.1; padding: 0 2px; }
+
+.ar { display: flex; align-items: center; color: var(--c, #555); }
+.ar .ln  { flex: 1; height: 2px; background: var(--c, #555); min-width: 4px; }
+.ar .n   { background: var(--c, #555); color: white; border-radius: 50%;
+           width: 18px; height: 18px; font-size: .53rem; font-weight: 900;
+           display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+           box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.ar .tip { font-size: .78rem; line-height: 1; flex-shrink: 0; }
+.ar.r { flex-direction: row; }
+.ar.l { flex-direction: row-reverse; }
+
+/* ── DETAIL PANEL (hidden until module click) ─────────────  */
+.detail-panel { background: white; border-radius: 0 0 12px 12px;
+                border: 2px solid #e2e8f0; border-top: none;
+                max-height: 0; overflow: hidden; opacity: 0;
+                transition: max-height .3s ease, opacity .28s; }
+.detail-panel.open { max-height: 380px; opacity: 1; }
+.dp-inner { padding: 14px 18px; }
+.dp-title { font-size: .82rem; font-weight: 800; margin-bottom: 10px; }
+.dp-steps { display: flex; flex-direction: column; gap: 5px; }
+.dp-step { display: flex; gap: 10px; align-items: flex-start; font-size: .73rem; color: #334155; line-height: 1.5; }
+.dp-step .b { width: 20px; height: 20px; border-radius: 50%; color: white; font-size: .56rem; font-weight: 900;
+              display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+              box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.dp-step .b.int { background: var(--gi); font-size: .7rem; }
+.dp-step .who { font-size: .62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .3px;
+                color: #94a3b8; white-space: nowrap; margin-top: 3px; flex-shrink: 0; min-width: 110px; }
+.dp-step .txt { flex: 1; }
+.dp-close { float: right; background: none; border: none; font-size: .8rem; cursor: pointer;
+            color: #94a3b8; font-weight: 700; padding: 0 0 8px 8px; }
+
+/* ── CONTRAST NOTE ───────────────────────────────────────── */
+.contrast-note { background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 10px;
+                 padding: 11px 15px; font-size: .78rem; color: #1e3a8a; line-height: 1.6; margin-top: 8px; }
+
+.view { display: none; } .view.vis { display: block; }
+.footer { text-align: center; font-size: .65rem; color: #94a3b8; padding-top: 14px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">CP's API Gateway — SIM-Based Number Verification</div>
+    <div class="topbar-sub">Sandbox · Operator Token / NV2.1 · (SETA = código OpenID4VP + descifrado)</div>
+  </div>
+  <div style="font-size:.65rem;opacity:.4;">Telefonica · Abril 2026</div>
+</div>
+
+<div class="page">
+<div class="tabs">
+  <button class="tab on" onclick="setTab('other',this)">⚡ Otras APIs CAMARA</button>
+  <button class="tab"    onclick="setTab('sim',this)">🔐 SIM-Based — Operator Token / NV2.1</button>
+</div>
+
+<!-- ══════════════ SIM-BASED ══════════════ -->
+<div id="simView" class="view">
+<div class="dcard">
+  <div class="drow">
+
+    <!-- APP / CLIENTE -->
+    <div class="dc dc-client">
+      <div class="dc-lbl">App / Cliente</div>
+      <div class="box b-app">📱 App</div>
+      <div class="box b-os">Android OS<span class="sub">CredentialManager</span></div>
+    </div>
+
+    <!-- ZONE 1: App ↔ SETA -->
+    <div class="az">
+      <!-- GROUP A: steps 1,2 — OpenID4VP -->
+      <div class="aw">
+        <div class="ar r" style="--c:var(--ga)"><div class="ln"></div><div class="n">1</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--ga)">pide creds OID4VP</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--ga)"><div class="tip">◀</div><div class="ln"></div><div class="n">2</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--ga)">creds firmadas</div>
+      </div>
+
+      <div class="az-sp"></div>
+
+      <!-- GROUP B: steps 3,6 — OT exchange -->
+      <div class="aw">
+        <div class="ar r" style="--c:var(--gb)"><div class="ln"></div><div class="n">3</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--gb)">envía OT Android</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--gb)"><div class="tip">◀</div><div class="ln"></div><div class="n">6</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--gb)">access token</div>
+      </div>
+
+      <div class="az-sp"></div>
+
+      <!-- GROUP C: steps 7,10 — NV API -->
+      <div class="aw">
+        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">7</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--gc)">llama endpoint</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">10</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--gc)">MSISDN ✓</div>
+      </div>
+    </div>
+
+    <!-- CP's API GATEWAY COLUMN -->
+    <div class="dc-seta">
+      <div class="dc-lbl">✦ CP's API Gateway (Sandbox)</div>
+
+      <!-- Módulo A: SETA — OpenID4VP (azul) -->
+      <div class="sfn sfn-a" id="s-fn1" onclick="simDetail('fn1',this)">
+        <span class="tag">🔷 SETA · pasos 1–2</span>
+        Genera credenciales OpenID4VP
+        <div class="int">genera creds con certificado SETA</div>
+      </div>
+
+      <!-- Shared-credential link -->
+      <div class="cred-link">misma clave privada SETA usada en pasos 1–2 y en el descifrado del paso 3</div>
+
+      <!-- Módulo B: SETA (descifrado) + Sandbox (JWT/AT) (morado) -->
+      <div class="sfn sfn-b" id="s-fn2" onclick="simDetail('fn2',this)">
+        <span class="tag">🔷 SETA + Sandbox · pasos 3–6</span>
+        Descifra OT (SETA) → JWT Bearer → Access Token
+        <div class="int">descifra OT con misma clave privada SETA</div>
+      </div>
+
+      <!-- Módulo C: Sandbox — NV API (verde) -->
+      <div class="sfn sfn-c" id="s-fn3" onclick="simDetail('fn3',this)">
+        <span class="tag">Sandbox · pasos 7–10</span>
+        Endpoint NV API · SDK opcional
+      </div>
+
+      <div class="cert">🔏 Certificado SETA · Fingerprint registrado en Android</div>
+    </div>
+
+    <!-- ZONE 2: SETA ↔ CSP -->
+    <div class="az">
+      <div class="az-sp"></div><!-- skip group A area -->
+
+      <!-- GROUP B: steps 4,5 — Auth Server -->
+      <div class="aw">
+        <div class="ar r" style="--c:var(--gb)"><div class="ln"></div><div class="n">4</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--gb)">JWT Bearer</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--gb)"><div class="tip">◀</div><div class="ln"></div><div class="n">5</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--gb)">access token</div>
+      </div>
+
+      <div class="az-sp"></div>
+
+      <!-- GROUP C: steps 8,9 — NV API -->
+      <div class="aw">
+        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">8</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--gc)">llama NV API</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">9</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--gc)">MSISDN</div>
+      </div>
+    </div>
+
+    <!-- CSP COLUMN -->
+    <div class="dc dc-csp">
+      <div class="dc-lbl">Operador (CSP)</div>
+      <div class="box b-csp" style="opacity:.7;font-size:.62rem;">Entitlement Server<span class="sub">OT vía Android OS</span></div>
+      <div class="box" style="background:#6d28d9;color:white;border-radius:6px;padding:5px 7px;font-size:.67rem;font-weight:700;text-align:center;line-height:1.3;">Auth Server<span class="sub" style="opacity:.8;">valida JWT Bearer</span></div>
+      <div class="box" style="background:#15803d;color:white;border-radius:6px;padding:5px 7px;font-size:.67rem;font-weight:700;text-align:center;line-height:1.3;">CAMARA NV API<span class="sub" style="opacity:.8;">devuelve MSISDN</span></div>
+    </div>
+
+  </div><!-- /drow -->
+</div><!-- /dcard -->
+
+<!-- DETAIL PANEL SIM -->
+<div class="detail-panel" id="simPanel">
+  <div class="dp-inner" id="simPanelInner"></div>
+</div>
+</div><!-- /simView -->
+
+
+<!-- ══════════════ OTRAS APIs ══════════════ -->
+<div id="otherView" class="view vis">
+
+<div class="bypass-note">
+  <strong>Flujo directo (producción):</strong> App → Auth Server del operador → CAMARA API. Sin intermediarios.<br/>
+  <strong>Vía sandbox (pruebas):</strong> el sandbox enruta las llamadas al operador correcto y filtra que solo pasen las líneas de prueba autorizadas. No hay SETA.
+</div>
+
+<div class="dcard" style="margin-top:10px;">
+  <div class="drow">
+
+    <!-- APP -->
+    <div class="dc dc-client">
+      <div class="dc-lbl">App / Cliente</div>
+      <div class="box b-app">📱 App<span class="sub">+ nº teléfono</span></div>
+    </div>
+
+    <!-- ZONE 1: App ↔ Sandbox -->
+    <div class="az">
+      <div class="aw">
+        <div class="ar r" style="--c:var(--ga)"><div class="ln"></div><div class="n">1</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--ga)">nº teléfono</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--ga)"><div class="tip">◀</div><div class="ln"></div><div class="n">4</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--ga)">access token</div>
+      </div>
+
+      <div class="az-sp"></div>
+
+      <div class="aw">
+        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">5</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--gc)">llama endpoint</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">8</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--gc)">resultado ✓</div>
+      </div>
+    </div>
+
+    <!-- SANDBOX OPCIONAL COLUMN -->
+    <div class="dc-sandbox-opt">
+      <div class="dc-lbl">
+        CP's API Gateway · sandbox de pruebas
+        <span class="opt-badge">opcional</span>
+      </div>
+
+      <div class="sfn sfn-oa" id="o-fn1" onclick="otherDetail('rt',this)">
+        <span class="tag">Enrutamiento OAuth + Control de acceso · pasos 1–4</span>
+        Identifica operador por prefijo · filtra líneas autorizadas
+        <div class="int">solo pasan líneas de prueba registradas</div>
+      </div>
+
+      <div class="sfn" id="o-fn2" onclick="otherDetail('api',this)" style="background:#16a34a;color:white;border-radius:7px;padding:5px 8px;font-size:.64rem;font-weight:700;text-align:center;line-height:1.25;cursor:pointer;transition:.15s;border:2px solid transparent;display:flex;flex-direction:column;gap:2px;">
+        <span class="tag" style="font-size:.48rem;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.4px;">Proxy CAMARA API · pasos 5–8</span>
+        Reenvía llamada al operador sin transformar
+      </div>
+
+      <div class="opt-note">Sin sandbox: App llama directamente al Auth Server y CAMARA API del operador</div>
+    </div>
+
+    <!-- ZONE 2: Sandbox ↔ CSP -->
+    <div class="az">
+      <div class="aw">
+        <div class="ar r" style="--c:var(--ga)"><div class="ln"></div><div class="n">2</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--ga)">OAuth</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--ga)"><div class="tip">◀</div><div class="ln"></div><div class="n">3</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--ga)">access token</div>
+      </div>
+
+      <div class="az-sp"></div>
+
+      <div class="aw">
+        <div class="ar r" style="--c:var(--gc)"><div class="ln"></div><div class="n">6</div><div class="ln"></div><div class="tip">▶</div></div>
+        <div class="lbl" style="color:var(--gc)">llama API</div>
+      </div>
+      <div class="az-gap"></div>
+      <div class="aw">
+        <div class="ar l" style="--c:var(--gc)"><div class="tip">◀</div><div class="ln"></div><div class="n">7</div><div class="ln"></div></div>
+        <div class="lbl" style="color:var(--gc)">resultado</div>
+      </div>
+    </div>
+
+    <!-- CSP -->
+    <div class="dc dc-csp">
+      <div class="dc-lbl">Operador (CSP)</div>
+      <div class="box" style="background:#6d28d9;color:white;border-radius:6px;padding:5px 7px;font-size:.67rem;font-weight:700;text-align:center;line-height:1.3;">Auth Server<span class="sub" style="opacity:.8;">OAuth estándar</span></div>
+      <div class="box" style="background:#15803d;color:white;border-radius:6px;padding:5px 7px;font-size:.67rem;font-weight:700;text-align:center;line-height:1.3;">CAMARA API<span class="sub" style="opacity:.8;">SIM Swap, Location…</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DETAIL PANEL OTHER -->
+<div class="detail-panel" id="otherPanel">
+  <div class="dp-inner" id="otherPanelInner"></div>
+</div>
+
+<div class="contrast-note" style="margin-top:10px;">
+  <strong>¿Por qué SIM-Based necesita SETA y esta vista no?</strong><br/>
+  En otras APIs la autorización es OAuth estándar — el sandbox solo enruta y filtra líneas, no descifra nada.
+  En SIM-Based, el Operator Token está <strong>cifrado para SETA</strong>: sin su clave privada no se puede
+  extraer el <em>temporaryToken</em> para llamar al Auth Server. Además, SETA genera las credenciales
+  OpenID4VP que Android exige para emitir el token.
+</div>
+</div><!-- /otherView -->
+
+<div class="footer">Operator Token · GSMA OpenGateway · Telefonica · Uso interno · Abril 2026</div>
+</div><!-- /page -->
+
+<script>
+// ── DETAIL CONTENT ────────────────────────────────────────
+const SIM_DETAILS = {
+  fn1: {
+    title: '🔷 SETA — Genera credenciales OpenID4VP',
+    color: 'var(--ga)',
+    steps: [
+      { n:'1',  c:'var(--ga)', w:'App → SETA',    t:'App pide a SETA las credenciales OpenID4VP para esta sesión' },
+      { n:'↻',  c:'var(--gi)', w:'SETA (interno)', t:'SETA genera las credenciales firmándolas con su <strong>certificado privado</strong> (credencial de sandbox Android)' },
+      { n:'2',  c:'var(--ga)', w:'SETA → App',    t:'SETA devuelve las credenciales firmadas. Android verificará el fingerprint antes de generar el OT' },
+    ]
+  },
+  fn2: {
+    title: '🔷 SETA · Descifra OT — Sandbox · JWT Bearer → Access Token',
+    color: 'var(--gb)',
+    steps: [
+      { n:'3',  c:'var(--gb)', w:'App → Sandbox',       t:'App envía el Operator Token generado por Android. Está cifrado para SETA — la App no puede leerlo' },
+      { n:'↻',  c:'var(--gi)', w:'SETA (interno)',       t:'SETA descifra el OT con la <strong>misma clave privada</strong> del paso 1–2 (credencial SETA sandbox Android)' },
+      { n:'4',  c:'var(--gb)', w:'Sandbox → Auth Server',t:'Sandbox extrae el <em>temporaryToken</em> y llama al Auth Server del operador con un JWT Bearer' },
+      { n:'5',  c:'var(--gb)', w:'Auth Server → Sandbox',t:'Auth Server valida el JWT Bearer y emite un access token CAMARA' },
+      { n:'6',  c:'var(--gb)', w:'Sandbox → App',        t:'Sandbox entrega el access token a la App' },
+    ]
+  },
+  fn3: {
+    title: 'Sandbox — Endpoint NV API / SDK',
+    color: 'var(--gc)',
+    steps: [
+      { n:'7',  c:'var(--gc)', w:'App → Sandbox',    t:'App llama al endpoint sandbox con el access token' },
+      { n:'8',  c:'var(--gc)', w:'Sandbox → NV API', t:'Sandbox reenvía la petición a la CAMARA NV API del operador' },
+      { n:'9',  c:'var(--gc)', w:'NV API → Sandbox', t:'NV API resuelve el número de teléfono y devuelve el MSISDN' },
+      { n:'10', c:'var(--gc)', w:'Sandbox → App',    t:'Sandbox devuelve el MSISDN verificado a la App' },
+    ]
+  }
+};
+
+const OTHER_DETAILS = {
+  rt: {
+    title: 'Enrutamiento OAuth + Control de acceso — pasos 1–4',
+    color: 'var(--ga)',
+    steps: [
+      { n:'1',  c:'var(--ga)', w:'App → Sandbox',          t:'App envía el número de teléfono al sandbox para iniciar el flujo OAuth' },
+      { n:'↻',  c:'var(--gi)', w:'Sandbox (interno)',       t:'<strong>Control de acceso sandbox:</strong> verifica que el número de teléfono está en la lista de líneas de prueba autorizadas. Las líneas no registradas son rechazadas aquí.' },
+      { n:'2',  c:'var(--ga)', w:'Sandbox → Auth Server',   t:'Sandbox identifica el operador por el prefijo del número y reenvía la petición OAuth estándar' },
+      { n:'3',  c:'var(--ga)', w:'Auth Server → Sandbox',   t:'Auth Server del operador valida el número y emite un access token CAMARA estándar' },
+      { n:'4',  c:'var(--ga)', w:'Sandbox → App',           t:'Sandbox entrega el access token a la App. Sin sandbox, la App recibiría este token directamente del Auth Server.' },
+    ]
+  },
+  api: {
+    title: 'Proxy CAMARA API — pasos 5–8',
+    color: 'var(--gc)',
+    steps: [
+      { n:'5', c:'var(--gc)', w:'App → Sandbox',    t:'App llama al endpoint sandbox con el access token obtenido en el paso 4' },
+      { n:'6', c:'var(--gc)', w:'Sandbox → API',    t:'Sandbox reenvía la petición sin modificar a la CAMARA API del operador' },
+      { n:'7', c:'var(--gc)', w:'API → Sandbox',    t:'CAMARA API (SIM Swap, Location, etc.) procesa la petición y devuelve el resultado' },
+      { n:'8', c:'var(--gc)', w:'Sandbox → App',    t:'Sandbox devuelve el resultado a la App. Sin sandbox, la App lo recibiría directamente del operador.' },
+    ]
+  }
+};
+
+function renderPanel(panelId, innerId, data, activeEl, allSelector) {
+  // toggle: if already active, close
+  const panel = document.getElementById(panelId);
+  if (activeEl.classList.contains('active')) {
+    activeEl.classList.remove('active');
+    panel.classList.remove('open');
+    return;
+  }
+  document.querySelectorAll(allSelector).forEach(b => b.classList.remove('active'));
+  activeEl.classList.add('active');
+
+  const stepsHtml = data.steps.map(s =>
+    `<div class="dp-step">
+       <div class="b ${s.n==='↻'?'int':''}" style="${s.n!=='↻'?'background:'+s.c:''}">${s.n}</div>
+       <div class="who">${s.w}</div>
+       <div class="txt">${s.t}</div>
+     </div>`).join('');
+
+  document.getElementById(innerId).innerHTML = `
+    <button class="dp-close" onclick="closePanel('${panelId}','${allSelector}')">✕</button>
+    <div class="dp-title" style="color:${data.color}">${data.title}</div>
+    <div class="dp-steps">${stepsHtml}</div>`;
+
+  panel.classList.add('open');
+  setTimeout(() => panel.scrollIntoView({ behavior:'smooth', block:'nearest' }), 60);
+}
+
+function closePanel(panelId, allSelector) {
+  document.getElementById(panelId).classList.remove('open');
+  document.querySelectorAll(allSelector).forEach(b => b.classList.remove('active'));
+}
+
+function simDetail(id, el)   { renderPanel('simPanel',   'simPanelInner',   SIM_DETAILS[id],   el, '.sfn-a,.sfn-b,.sfn-c'); }
+function otherDetail(id, el) { renderPanel('otherPanel', 'otherPanelInner', OTHER_DETAILS[id], el, '.sfn-oa');               }
+
+function setTab(t, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('simView').classList.toggle('vis', t === 'sim');
+  document.getElementById('otherView').classList.toggle('vis', t === 'other');
+  // cerrar paneles al cambiar de tab
+  ['simPanel','otherPanel'].forEach(id => document.getElementById(id).classList.remove('open'));
+  document.querySelectorAll('.sfn').forEach(b => b.classList.remove('active'));
+}
+</script>
+</body>
+</html>
