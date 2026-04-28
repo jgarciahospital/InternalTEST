@@ -59,6 +59,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .bypass-note { background: #f0fdf4; border: 1.5px dashed #86efac; border-radius: 6px;
                padding: 6px 10px; font-size: .58rem; color: #166534; line-height: 1.45; margin-top: 8px; }
 
+/* ── INTERNAL CLIENT CALLS (App ↕ Android) ── */
+.cl-int { display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 0 6px; }
+.cl-int-bar { height: 8px; width: 2px; background: #c4b5fd; align-self: center; }
+.cl-int-call { display: flex; align-items: center; gap: 4px; }
+.cl-int-call .tip { font-size: .65rem; color: #7c3aed; flex-shrink: 0; }
+.cl-int-call .lbl { font-size: .47rem; font-weight: 700; color: #6d28d9; line-height: 1.25; flex: 1; }
+.cl-int-call.up  { flex-direction: row-reverse; }
+.cl-int-call.up .lbl { text-align: right; }
+.b-os-eap { font-size: .49rem; font-style: italic; opacity: .75; margin-top: 2px; display: block;
+            background: rgba(255,255,255,.1); border-radius: 3px; padding: 1px 3px; }
+
 .box { border-radius: 6px; padding: 5px 7px; font-size: .67rem; font-weight: 700; text-align: center; line-height: 1.3; }
 .b-app { background: #7c3aed; color: white; }
 .b-os  { background: #475569; color: white; }
@@ -203,7 +214,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="dc dc-client">
       <div class="dc-lbl">App / Cliente</div>
       <div class="box b-app">📱 App</div>
-      <div class="box b-os">Android OS<span class="sub">CredentialManager</span></div>
+
+      <div class="cl-int">
+        <div class="cl-int-bar"></div>
+        <div class="cl-int-call">
+          <span class="tip">▼</span>
+          <span class="lbl">creds OID4VP<br/>pide OT</span>
+        </div>
+        <div class="cl-int-bar"></div>
+        <div class="cl-int-call up">
+          <span class="tip">▲</span>
+          <span class="lbl">OT cifrado</span>
+        </div>
+        <div class="cl-int-bar"></div>
+      </div>
+
+      <div class="box b-os">Android OS<span class="sub">CredentialManager</span><span class="b-os-eap">EAP-AKA → ES</span></div>
     </div>
 
     <!-- ZONE 1: App ↔ SETA -->
