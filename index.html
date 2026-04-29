@@ -162,8 +162,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
       <!-- Interfaz -->
       <div class="layer iface-layer">
-        <div class="layer-title">Portal OpenGateway — Capa de interfaz</div>
-        <div class="layer-sub">Accesible desde la web de OpenGateway para cualquier developer registrado</div>
+        <div class="layer-title">Portal OpenGateway — Self-service para developers</div>
+        <div class="layer-sub">El developer gestiona su propio acceso de forma autónoma desde la web de OpenGateway</div>
         <div class="li-list">
           <div class="li-item">Registro de developer y obtención de credenciales de acceso</div>
           <div class="li-item">Creación de apps con credenciales específicas por API</div>
@@ -214,17 +214,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
       <!-- Gestión de clientes y líneas -->
       <div class="layer iface-layer-new">
-        <div class="layer-title">Gestión de clientes y líneas</div>
-        <div class="layer-sub">Reemplaza el portal de registro. Configuración del acceso de cada developer.</div>
+        <div class="layer-title">Gestión de clientes y líneas <span style="font-weight:600;color:#dc2626;font-size:.6rem;margin-left:4px;">· sin self-service para developers</span></div>
+        <div class="layer-sub">El acceso ya no se gestiona por el developer de forma autónoma. Un empleado de Telefonica configura manualmente las credenciales y los números autorizados.</div>
         <div class="iface-modules">
           <div class="mod config-mod" style="flex:1;">
             <div class="mod-title">Config files</div>
-            <div class="mod-desc">Configuración manual actual. Clientes, credenciales y whitelist gestionados via ficheros.</div>
+            <div class="mod-desc">Configuración actual por empleados. Clientes, credenciales y whitelist gestionados via ficheros.</div>
             <div style="margin-top:4px;"><span class="evo-badge retiring" style="font-size:.5rem;">Temporal</span></div>
           </div>
           <div class="mod backoffice-mod" style="flex:1;">
             <div class="mod-title">Backoffice web</div>
-            <div class="mod-desc">Interfaz web para gestionar credenciales y líneas sin tocar ficheros.</div>
+            <div class="mod-desc">Interfaz interna <strong>solo para empleados</strong>. Gestión de credenciales y líneas sin tocar ficheros.</div>
             <div style="margin-top:4px;"><span class="evo-badge wip" style="font-size:.5rem;">En desarrollo</span></div>
           </div>
         </div>
